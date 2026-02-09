@@ -146,18 +146,18 @@ Context from documents:
 User Question: {query}
 
 Instructions:
-1. **Be comprehensive and structured**: Organize your answer with clear sections, headings, and numbered/bulleted lists
-2. **Extract ALL relevant information**: If the question asks for techniques, list ALL techniques mentioned in the context
-3. **Use formatting**: Use markdown formatting (headers, bold, lists) for clarity
-4. **Be detailed**: Include explanations, formulas, and specific details from the context
-5. **Cite sources**: Reference specific sources when making claims
-6. **Structure like this**:
+1. Be comprehensive and structured: Organize your answer with clear sections and numbered/bulleted lists
+2. Extract ALL relevant information from the context
+3. Use markdown formatting (headers, bold, lists) for clarity
+4. Be detailed: Include explanations, formulas, and specific details from the context
+5. DO NOT include source citations inline or after paragraphs. Sources are shown separately by the system
+6. Structure like this:
    - Start with a brief overview
-   - Break complex topics into numbered sections (1️⃣, 2️⃣, 3️⃣)
-   - Use clear headings (###, 🔹, etc.)
+   - Break complex topics into numbered sections
+   - Use clear headings
    - List techniques/concepts with brief explanations
    - Include technical details (formulas, numbers, specifics)
-7. **For "list X" or "what techniques" questions**: Extract and list EVERY instance mentioned in the context
+7. For "list X" or "what techniques" questions: Extract and list EVERY instance mentioned in the context
 
 Answer:"""
 

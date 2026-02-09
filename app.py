@@ -1,6 +1,18 @@
 """Agentic RAG System - Main Application"""
-import streamlit as st
 import os
+import warnings
+import logging
+
+# --- MUST be set BEFORE importing any HuggingFace/transformers libraries ---
+os.environ['HF_HUB_OFFLINE'] = '1'
+os.environ['TRANSFORMERS_OFFLINE'] = '1'
+os.environ['TOKENIZERS_PARALLELISM'] = 'false'
+warnings.filterwarnings("ignore")
+logging.getLogger('transformers').setLevel(logging.ERROR)
+logging.getLogger('sentence_transformers').setLevel(logging.ERROR)
+logging.getLogger('tqdm').setLevel(logging.ERROR)
+
+import streamlit as st
 from pathlib import Path
 from dotenv import load_dotenv
 from langchain_google_genai import ChatGoogleGenerativeAI
@@ -14,7 +26,6 @@ try:
     ADVANCED_RETRIEVAL_AVAILABLE = True
 except ImportError:
     ADVANCED_RETRIEVAL_AVAILABLE = False
-    print("Advanced retrieval not available - install rank-bm25")
 
 # Load environment variables
 load_dotenv()
@@ -24,14 +35,23 @@ load_dotenv()
 def get_embeddings():
     """Load and cache the embedding model"""
     from langchain_community.embeddings import HuggingFaceEmbeddings
-    import os
-    # Use local cache only, don't download
-    os.environ['TRANSFORMERS_OFFLINE'] = '0'  # Allow first download
-    return HuggingFaceEmbeddings(
-        model_name="sentence-transformers/all-MiniLM-L6-v2",
-        model_kwargs={'device': 'cpu'},
-        encode_kwargs={'normalize_embeddings': True, 'show_progress_bar': False}
-    )
+    
+    # Try offline first, then online if needed
+    try:
+        return HuggingFaceEmbeddings(
+            model_name="sentence-transformers/all-MiniLM-L6-v2",
+            model_kwargs={'device': 'cpu'},
+            encode_kwargs={'normalize_embeddings': True}
+        )
+    except Exception:
+        # Model not cached locally yet, allow download
+        os.environ['HF_HUB_OFFLINE'] = '0'
+        os.environ['TRANSFORMERS_OFFLINE'] = '0'
+        return HuggingFaceEmbeddings(
+            model_name="sentence-transformers/all-MiniLM-L6-v2",
+            model_kwargs={'device': 'cpu'},
+            encode_kwargs={'normalize_embeddings': True}
+        )
 
 # Page configuration
 st.set_page_config(
@@ -128,17 +148,7 @@ def initialize_system(api_key: str):
         # Get document count
         st.session_state.doc_count = vector_db.get_collection_count()
         
-        # Build BM25 index if advanced mode enabled
-        if advanced_retriever and st.session_state.doc_count > 0:
-            try:
-                all_docs = vector_db.vectorstore.get()["documents"]
-                if all_docs:
-                    from langchain_core.documents import Document
-                    docs = [Document(page_content=doc) for doc in all_docs]
-                    advanced_retriever.build_bm25_index(docs)
-            except Exception as e:
-                print(f"Warning: BM25 index build failed: {str(e)}")
-        
+        # BM25 index will be built when documents are processed
         return True
     except Exception as e:
         st.error(f"Error initializing system: {str(e)}")
@@ -251,13 +261,11 @@ def main():
                             st.session_state.session_doc_ids = []
                             st.success("Session documents removed!")
                             st.rerun()
-                    st.success("Database cleared!")
-                    st.rerun()
     
     # Main content
     # Main content
     if not api_key or api_key == "your_google_api_key_here":
-        st.info("👈 Please add your Google Gemini API Key to get started.")
+        st.info(" Please add your Google Gemini API Key to get started.")
         st.markdown("""
         ### How to get started:
         1. Get a free API key from [Google AI Studio](https://makersuite.google.com/app/apikey)
@@ -325,7 +333,7 @@ def process_documents(uploaded_files):
             return
         
         # Process documents
-        with st.spinner(f"Processing {len(file_paths)} documents..."):
+        with st.spinner(f"Processing documents..."):
             try:
                 # Extract and chunk documents
                 chunks = st.session_state.doc_processor.process_multiple_documents(file_paths)
@@ -335,14 +343,10 @@ def process_documents(uploaded_files):
                     st.session_state.vector_db.add_documents(chunks)
                     st.session_state.doc_count = st.session_state.vector_db.get_collection_count()
                     
-                    # Rebuild BM25 index if advanced mode enabled
+                    # Rebuild BM25 index from new chunks only (fast)
                     if st.session_state.get('advanced_retriever'):
                         try:
-                            all_docs = st.session_state.vector_db.vectorstore.get()["documents"]
-                            if all_docs:
-                                from langchain_core.documents import Document
-                                docs = [Document(page_content=doc) for doc in all_docs]
-                                st.session_state.advanced_retriever.build_bm25_index(docs)
+                            st.session_state.advanced_retriever.build_bm25_index(chunks)
                         except Exception as e:
                             print(f"Warning: BM25 rebuild failed: {str(e)}")
                     
@@ -352,11 +356,6 @@ def process_documents(uploaded_files):
                             st.session_state.session_doc_ids.append(file_path)
                     
                     st.success(f"Successfully processed {len(file_paths)} documents ({len(chunks)} chunks)")
-                    if st.session_state.session_mode:
-                        st.info("🔄 Session Mode: Click 'Done (Remove)' to auto-remove these documents")
-                    if st.session_state.get('advanced_mode'):
-                        st.info("Advanced retrieval features active")
-                    st.rerun()
                 else:
                     st.error("No content extracted from documents")
             except Exception as e:

@@ -1,8 +1,9 @@
 """Vector Database Manager using ChromaDB"""
 from typing import List, Dict, Optional
 from langchain_core.documents import Document
-from langchain_community.embeddings import HuggingFaceEmbeddings
 from langchain_chroma import Chroma
+
+from langchain_community.embeddings import HuggingFaceEmbeddings
 
 
 class VectorDBManager:

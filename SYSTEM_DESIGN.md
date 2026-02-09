@@ -56,7 +56,8 @@ The Agentic RAG (Retrieval-Augmented Generation) System is an intelligent docume
                  ▼                      ▼
     ┌────────────────────┐  ┌──────────────────────┐
     │   LLM Service      │  │   Vector Database    │
-    │  (Gemini Pro)      │  │    (ChromaDB)        │
+    │(Gemini 2.5 Flash)  │  │    (ChromaDB)        │
+    │                    │  │  + BM25 Index        │
     └────────────────────┘  └──────────┬───────────┘
                                        │
                                        ▼
@@ -159,12 +160,12 @@ User Query
 │ STEP 4: Answer Synthesis                                │
 │ ─────────────────────────────────────────────────────── │
 │ Agent generates answer:                                 │
+│ • Injects conversation history (last 3 Q&A pairs)      │
 │ • Combines information from multiple sources            │
-│ • Maintains context coherence                           │
-│ • Cites sources appropriately                           │
-│ • Formats response clearly                              │
+│ • Maintains context coherence for follow-up questions   │
+│ • Formats response clearly with markdown                │
 │                                                         │
-│ Prompt includes: Context + Query + Instructions         │
+│ Prompt includes: Conversation + Context + Query + Rules │
 └────────────────────────┬────────────────────────────────┘
                          ↓
 ┌─────────────────────────────────────────────────────────┐
@@ -192,7 +193,8 @@ Our Agentic RAG system demonstrates intelligence through:
 3. **Adaptation**: Adjusts retrieval strategy based on query type
 4. **Tool Use**: Dynamically uses vector search and LLM
 5. **Self-Evaluation**: Reflects on answer quality
-6. **Learning**: Maintains conversation context for follow-ups
+6. **Memory**: Maintains conversation context (last 3 exchanges) for follow-ups
+7. **Hybrid Retrieval**: Combines vector + keyword search via Reciprocal Rank Fusion
 
 ### 3.3 Example Agentic Flow
 
@@ -298,12 +300,27 @@ Input Document
 
 ### 4.4 Retrieval Strategy
 
-**Similarity Metric**: Cosine Similarity (via ChromaDB L2 distance)
+**Dual Retrieval System**:
+- **Vector Search**: ChromaDB semantic similarity (L2 distance)
+- **BM25 Keyword Search**: rank-bm25 (BM25Okapi) for exact term matching
+- **Fusion**: Reciprocal Rank Fusion (RRF) combines both ranked lists
 
-**Dynamic K Selection**:
-- Simple queries: k=4
-- Complex queries: k=4 per sub-query
-- Maximum results shown to user: 5
+**RRF Formula**: `RRF(d) = Σ 1/(k + rank(d))` where k=60 (standard constant)
+
+**Why RRF over Weighted Scores**:
+- ChromaDB returns Euclidean distances, BM25 returns TF-IDF scores — incompatible scales
+- RRF uses only rank positions, making it scale-free and robust
+- Documents appearing in both result sets are naturally boosted
+
+**Retrieval Strategies**:
+| Strategy | Description |
+|----------|-------------|
+| `auto` | System selects based on query keywords |
+| `hybrid` | Vector + BM25 with RRF fusion (best quality) |
+| `vector` | Pure semantic embedding search |
+| `bm25` | Pure keyword-based search |
+
+**K Selection**: k=8 per sub-query, top 10 unique chunks sent to LLM
 
 **Relevance Filtering**:
 - Threshold: 1.5 (L2 distance)
@@ -418,16 +435,18 @@ Input Document
 
 ```
 AI-Intern/
-├── app.py                  # Entry point, UI logic
-├── agentic_rag.py         # Core agent workflow
-├── vector_db.py           # Database operations
-├── document_processor.py  # Document parsing
+├── app.py                  # Entry point, UI logic, session management
+├── agentic_rag.py         # Core 5-step agent workflow
+├── advanced_retrieval.py  # BM25 + RRF hybrid search
+├── vector_db.py           # ChromaDB operations
+├── document_processor.py  # Multi-format document parsing
 └── requirements.txt       # Dependencies
 ```
 
 **Separation of Concerns**:
 - **Presentation**: Streamlit UI (app.py)
 - **Business Logic**: Agentic workflow (agentic_rag.py)
+- **Retrieval**: BM25 + RRF hybrid search (advanced_retrieval.py)
 - **Data Access**: Vector operations (vector_db.py)
 - **Utilities**: Document processing (document_processor.py)
 
@@ -540,20 +559,22 @@ except Exception as e:
 
 ### 9.1 Short-Term (1-2 months)
 
-1. **Advanced Retrieval**
-   - Implement HyDE (Hypothetical Document Embeddings)
-   - Add multi-query retrieval
-   - Parent-child chunking
+1. **Enhanced Retrieval**
+   - Cross-encoder reranking model for better precision
+   - Query expansion (LLM-generated alternative phrasings)
+   - MMR (Maximal Marginal Relevance) for result diversity
+   - HyDE (Hypothetical Document Embeddings)
 
 2. **Better UI**
    - Document preview
    - Chunk visualization
    - Interactive source exploration
+   - Streaming LLM responses
 
-3. **Conversation Memory**
-   - Persistent chat history
-   - Session management
-   - Export conversations
+3. **Better Tokenization**
+   - Stemming (PorterStemmer)
+   - Stopword removal
+   - N-gram support for BM25
 
 ### 9.2 Medium-Term (3-6 months)
 
@@ -612,7 +633,9 @@ Respond ONLY with valid JSON.
 
 ### Answer Synthesis Prompt
 ```
-You are an intelligent AI assistant. Answer the user's question based on the provided context.
+You are an intelligent AI assistant. Answer the user's question comprehensively based on the provided context.
+
+{conversation_history (last 3 Q&A pairs, if any)}
 
 Context from documents:
 {context}
@@ -620,11 +643,11 @@ Context from documents:
 User Question: {query}
 
 Instructions:
-1. Provide a clear, comprehensive answer
-2. Use specific information from the context
-3. If the context doesn't fully answer the question, say so
-4. Cite sources when possible
-5. Be concise but thorough
+1. Be comprehensive and structured with clear sections and lists
+2. Extract ALL relevant information from the context
+3. Use markdown formatting (headers, bold, lists) for clarity
+4. DO NOT include source citations inline (system shows them separately)
+5. For "list X" or "what techniques" questions: Extract EVERY instance
 
 Answer:
 ```

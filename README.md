@@ -207,12 +207,3 @@ max_chunks = 10          # Chunks for answer synthesis
 
 This project is open source and available for educational purposes.
 
----
-
-<div align="center">
-
-**Agentic RAG System** | 2026
-
-[![GitHub stars](https://img.shields.io/github/stars/P-Saroha/AI-Agent-documents?style=social)](https://github.com/P-Saroha/AI-Agent-documents)
-
-</div>

@@ -48,10 +48,7 @@ class VectorDBManager:
             self.vectorstore.add_documents(documents)
             return True
         except Exception as e:
-            error_msg = str(e)
-            print(f"✗ Error adding documents: {error_msg}")
-            # Also raise to propagate to UI
-            raise Exception(f"Failed to add documents: {error_msg}")
+            raise Exception(f"Failed to add documents: {str(e)}")
     
     def similarity_search(self, query: str, k: int = 5) -> List[Document]:
         """Search for similar documents"""
@@ -90,9 +87,9 @@ class VectorDBManager:
             if self.vectorstore:
                 self.vectorstore.delete_collection()
                 self.create_or_load_collection()
-                print("✓ Collection cleared")
                 return True
         except Exception as e:
+            return False
 
     
     def get_collection_count(self) -> int:
@@ -130,7 +127,6 @@ class VectorDBManager:
             # Delete the documents
             if ids_to_delete:
                 collection.delete(ids=ids_to_delete)
-                print(f"✓ Removed {len(ids_to_delete)} document chunks from {len(source_paths)} files")
                 return True
             
             return False

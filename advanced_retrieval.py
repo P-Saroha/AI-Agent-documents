@@ -59,11 +59,9 @@ Return ONLY the rewritten query, nothing else."""
 
             response = self.llm.invoke(rewrite_prompt)
             rewritten = response.content.strip().strip('"')
-            logger.info(f"✓ Query rewritten: '{query}' → '{rewritten}'")
             return rewritten
             
         except Exception as e:
-            logger.warning(f"Query rewriting failed: {str(e)}")
             return query
     
     def build_bm25_index(self, documents: List[Document]):
@@ -75,9 +73,7 @@ Return ONLY the rewritten query, nothing else."""
             self.documents = documents
             tokenized_docs = [doc.page_content.lower().split() for doc in documents]
             self.bm25_index = BM25Okapi(tokenized_docs)
-            logger.info(f"✓ BM25 index built with {len(documents)} documents")
         except Exception as e:
-            logger.error(f"✗ Failed to build BM25 index: {str(e)}")
             self.bm25_index = None
     
     def bm25_search(self, query: str, k: int = 10) -> List[Tuple[Document, float]]:
@@ -95,11 +91,9 @@ Return ONLY the rewritten query, nothing else."""
             top_indices = sorted(range(len(scores)), key=lambda i: scores[i], reverse=True)[:k]
             results = [(self.documents[i], scores[i]) for i in top_indices if scores[i] > 0]
             
-            logger.info(f"✓ BM25 found {len(results)} results")
             return results
             
         except Exception as e:
-            logger.error(f"✗ BM25 search failed: {str(e)}")
             return []
     
     def hybrid_search(self, query: str, k: int = 10, alpha: float = 0.5) -> List[Document]:
@@ -118,7 +112,6 @@ Return ONLY the rewritten query, nothing else."""
             bm25_results = self.bm25_search(query, k=k) if self.bm25_index else []
             
             if not bm25_results:
-                logger.info("✓ Using vector search only (BM25 not available)")
                 return [doc for doc, _ in vector_results]
             
             # Normalize scores
@@ -157,11 +150,9 @@ Return ONLY the rewritten query, nothing else."""
             )[:k]
             
             results = [all_docs[content] for content, _ in sorted_docs]
-            logger.info(f"✓ Hybrid search returned {len(results)} results (α={alpha})")
             return results
             
         except Exception as e:
-            logger.error(f"✗ Hybrid search failed: {str(e)}, falling back to vector search")
             return [doc for doc, _ in vector_results[:k]]
     
     def mmr_rerank(self, query: str, documents: List[Document], k: int = 5, lambda_param: float = 0.5) -> List[Document]:
@@ -207,11 +198,9 @@ Return ONLY the rewritten query, nothing else."""
                 selected.append(best_doc)
                 remaining.remove(best_doc)
             
-            logger.info(f"✓ MMR reranked to {len(selected)} diverse results")
             return selected
             
         except Exception as e:
-            logger.error(f"✗ MMR reranking failed: {str(e)}")
             return documents[:k]
     
     def _doc_similarity(self, doc1: Document, doc2: Document) -> float:
@@ -244,8 +233,6 @@ Return ONLY the rewritten query, nothing else."""
         - "hybrid": Combines both (recommended)
         """
         try:
-            logger.info(f"🔍 Intelligent Retrieval: strategy={strategy}, expansion={use_expansion}, rerank={use_reranking}")
-            
             # Query expansion
             queries = self.expand_query(query) if use_expansion else [query]
             
@@ -273,11 +260,9 @@ Return ONLY the rewritten query, nothing else."""
             # Rerank for diversity
             final_results = self.mmr_rerank(query, unique_docs, k=k) if use_reranking else unique_docs[:k]
             
-            logger.info(f"✓ Retrieved {len(final_results)} documents")
             return final_results
             
         except Exception as e:
-            logger.error(f"✗ Intelligent retrieval failed: {str(e)}")
             # Fallback to basic vector search
             try:
                 return [doc for doc, _ in self.vector_db.similarity_search_with_score(query, k=k)]

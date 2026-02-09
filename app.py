@@ -141,7 +141,7 @@ def initialize_system(api_key: str):
         advanced_retriever = None
         if ADVANCED_RETRIEVAL_AVAILABLE and st.session_state.advanced_mode:
             try:
-                advanced_retriever = AdvancedRetriever(llm, vector_db)
+                advanced_retriever = AdvancedRetriever(vector_db)
             except Exception as e:
                 print(f"Advanced retrieval initialization failed: {str(e)}")
         

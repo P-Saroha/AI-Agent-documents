@@ -45,12 +45,18 @@ class AdvancedRetriever:
         except Exception as e:
             return []
     
-    def hybrid_search(self, query: str, k: int = 10, alpha: float = 0.5) -> List[Document]:
+    def hybrid_search(self, query: str, k: int = 10, rrf_k: int = 60) -> List[Document]:
         """
-        Hybrid Search: Combines vector similarity + keyword matching (BM25)
+        Hybrid Search using Reciprocal Rank Fusion (RRF)
+        Combines vector similarity + keyword matching (BM25) using rank-based fusion.
+        
+        RRF is more robust than weighted score combination because it only uses
+        rank positions, avoiding issues with incompatible score scales.
+        
+        Formula: RRF(d) = sum(1 / (rrf_k + rank(d))) across all retrievers
         
         Args:
-            alpha: Weight for vector search (0=pure BM25, 1=pure vector)
+            rrf_k: RRF constant (default 60, standard value from the original paper)
         """
         try:
             # Vector search
@@ -62,40 +68,22 @@ class AdvancedRetriever:
             if not bm25_results:
                 return [doc for doc, _ in vector_results]
             
-            # Normalize scores
-            def normalize_scores(results):
-                if not results:
-                    return {}
-                scores = [score for _, score in results]
-                min_score, max_score = min(scores), max(scores)
-                if max_score == min_score:
-                    return {doc.page_content: 0.5 for doc, _ in results}
-                return {
-                    doc.page_content: (score - min_score) / (max_score - min_score)
-                    for doc, score in results
-                }
-            
-            # Normalize (for vector, lower is better in ChromaDB, so invert)
-            vector_scores = {
-                doc.page_content: 1 - score for doc, score in vector_results
-            }
-            bm25_scores = normalize_scores(bm25_results)
-            
-            # Combine scores
+            # Build a map of all documents by content
             all_docs = {doc.page_content: doc for doc, _ in vector_results + bm25_results}
-            combined_scores = {}
             
-            for content, doc in all_docs.items():
-                vec_score = vector_scores.get(content, 0)
-                bm25_score = bm25_scores.get(content, 0)
-                combined_scores[content] = (alpha * vec_score + (1 - alpha) * bm25_score)
+            # Compute RRF scores
+            rrf_scores = {}
             
-            # Sort by combined score
-            sorted_docs = sorted(
-                combined_scores.items(),
-                key=lambda x: x[1],
-                reverse=True
-            )[:k]
+            # Vector results: lower distance = better rank in ChromaDB
+            for rank, (doc, _) in enumerate(vector_results):
+                rrf_scores[doc.page_content] = rrf_scores.get(doc.page_content, 0) + 1 / (rrf_k + rank + 1)
+            
+            # BM25 results: already sorted by descending score
+            for rank, (doc, _) in enumerate(bm25_results):
+                rrf_scores[doc.page_content] = rrf_scores.get(doc.page_content, 0) + 1 / (rrf_k + rank + 1)
+            
+            # Sort by RRF score (higher is better)
+            sorted_docs = sorted(rrf_scores.items(), key=lambda x: x[1], reverse=True)[:k]
             
             results = [all_docs[content] for content, _ in sorted_docs]
             return results

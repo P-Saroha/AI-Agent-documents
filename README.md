@@ -24,7 +24,7 @@ An intelligent document Q&A system powered by AI agents with multi-step reasonin
 ### Bonus: Advanced Retrieval
 
 - **BM25 Keyword Search** - Term frequency based document matching
-- **Hybrid Search** - Combines BM25 (keyword) + Vector (semantic) search
+- **Hybrid Search with RRF** - Reciprocal Rank Fusion combines BM25 + Vector search using rank-based scoring
 - **Smart Strategy Selection** - Auto-selects best strategy based on query type
 
 ### Agentic Workflow (5 Steps)
@@ -127,7 +127,7 @@ App opens at: http://localhost:8501
 | Strategy | Description |
 |----------|-------------|
 | `auto` | Smart selection based on query type (recommended) |
-| `hybrid` | BM25 + Vector search combined |
+| `hybrid` | BM25 + Vector search combined via Reciprocal Rank Fusion (RRF) |
 | `vector` | Pure semantic search |
 | `bm25` | Pure keyword search |
 
@@ -140,7 +140,7 @@ App opens at: http://localhost:8501
 | **LLM** | Google Gemini 2.5 Flash | Natural language understanding & generation |
 | **Vector DB** | ChromaDB | Persistent vector storage & semantic search |
 | **Embeddings** | HuggingFace all-MiniLM-L6-v2 | Local CPU-optimized text embeddings (384-dim) |
-| **Keyword Search** | BM25 (rank-bm25) | Hybrid retrieval |
+| **Keyword Search** | BM25 (rank-bm25) | Hybrid retrieval via RRF |
 | **Framework** | LangChain | RAG pipeline orchestration |
 | **UI** | Streamlit | Interactive web interface |
 | **Doc Parsing** | pypdf, python-docx, python-pptx, openpyxl | Multi-format document support |
@@ -153,7 +153,7 @@ App opens at: http://localhost:8501
 AI-Agent-documents/
 ├── app.py                    # Streamlit UI, session management
 ├── agentic_rag.py            # 5-step agentic workflow engine
-├── advanced_retrieval.py     # BM25 + hybrid search (bonus)
+├── advanced_retrieval.py     # BM25 + RRF hybrid search (bonus)
 ├── document_processor.py     # Multi-format document ingestion
 ├── vector_db.py              # ChromaDB wrapper
 ├── requirements.txt          # Python dependencies
@@ -200,6 +200,46 @@ max_chunks = 10          # Chunks for answer synthesis
 | No content extracted | Check file format is supported, verify file isn't corrupted |
 | Rate limit (429) | Wait 60 seconds, system auto-retries with backoff |
 | Database errors | Click "Clear All" in sidebar or delete `chroma_db/` folder |
+
+---
+
+## How Hybrid Search Works (RRF)
+
+The hybrid search uses **Reciprocal Rank Fusion (RRF)** to combine results from two independent retrievers:
+
+| Retriever | What it does |
+|-----------|-------------|
+| **Vector Search** (ChromaDB) | Finds semantically similar chunks using embeddings |
+| **BM25 Search** (rank-bm25) | Finds keyword-matching chunks using term frequency |
+
+### Why RRF over Weighted Scores?
+
+Previously, hybrid search used a **weighted linear combination** (`alpha * vector + (1-alpha) * bm25`), which had issues:
+- BM25 and vector scores use completely different scales
+- Score normalization was fragile and could distort rankings
+- The `alpha` weight was arbitrary and query-dependent
+
+**RRF solves all of this** by using only rank positions, not raw scores:
+
+```
+RRF(d) = Σ  1 / (k + rank(d))    for each retriever
+```
+
+- `k = 60` (standard constant from the original paper)
+- Each retriever assigns ranks independently
+- Documents appearing in **both** result sets get naturally boosted
+- No score normalization needed — rank 1 is rank 1 regardless of the retriever
+
+### Example
+
+| Document | Vector Rank | BM25 Rank | RRF Score |
+|----------|------------|-----------|----------|
+| Doc A | 1 | 3 | 1/61 + 1/63 = **0.032** |
+| Doc B | 2 | 1 | 1/62 + 1/61 = **0.032** |
+| Doc C | 3 | - | 1/63 = **0.016** |
+| Doc D | - | 2 | 1/62 = **0.016** |
+
+Docs A and B rank highest because they appear in both retrievers.
 
 ---
 

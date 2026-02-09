@@ -1,0 +1,23 @@
+# Environment
+.env
+venv/
+env/
+*.pyc
+__pycache__/
+
+# Database
+chroma_db/
+*.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Uploads
+uploads/

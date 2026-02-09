@@ -5,11 +5,6 @@ Implements query expansion, hybrid search, and reranking for better retrieval
 from typing import List, Dict, Tuple
 from langchain_core.documents import Document
 from rank_bm25 import BM25Okapi
-import logging
-
-# Configure logging
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
 
 
 class AdvancedRetriever:
@@ -43,11 +38,9 @@ Examples:
             
             # Combine with original
             expanded_queries = [query] + alternatives
-            logger.info(f"✓ Query expanded to {len(expanded_queries)} variants")
             return expanded_queries
             
         except Exception as e:
-            logger.warning(f"Query expansion failed: {str(e)}, using original query")
             return [query]
     
     def rewrite_query(self, query: str, context: str = "") -> str:

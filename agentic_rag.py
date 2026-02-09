@@ -7,11 +7,6 @@ from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.documents import Document
 from langchain_core.prompts import PromptTemplate
 import json
-import logging
-
-# Configure logging
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
 
 
 class AgenticRAG:
@@ -105,13 +100,9 @@ Example: ["sub-query 1", "sub-query 2", "sub-query 3"]"""
         Args:
             strategy: "auto", "vector", "hybrid", "bm25"
         """
-        logger.info(f"📚 Retrieving documents (strategy={strategy})...")
-        
         try:
             # Use advanced retrieval if available
             if self.use_advanced_retrieval and strategy != "vector":
-                logger.info("✓ Using advanced retrieval techniques")
-                
                 # Auto-select strategy based on query
                 if strategy == "auto":
                     # Use hybrid for comprehensive queries
@@ -129,11 +120,9 @@ Example: ["sub-query 1", "sub-query 2", "sub-query 3"]"""
                 )
                 
                 if results:
-                    logger.info(f"✓ Advanced retrieval returned {len(results)} results")
                     return results
             
             # Fallback to standard vector search
-            logger.info("✓ Using standard vector search")
             results = self.vector_db.similarity_search_with_score(query, k=num_results)
         
             if not results:
@@ -142,15 +131,13 @@ Example: ["sub-query 1", "sub-query 2", "sub-query 3"]"""
             # Filter by relevance score (lower is better for ChromaDB)
             filtered_results = []
             for doc, score in results:
-                # ChromaDB uses distance, so lower is better
-                if score < 1.5:  # Threshold for relevance
+                if score < 1.5:  # Threshold for relevance  
                     filtered_results.append(doc)
-                    logger.info(f"  ✓ Found relevant chunk (score: {score:.3f})")
             
             return filtered_results if filtered_results else [doc for doc, _ in results[:3]]
             
         except Exception as e:
-            logger.error(f"✗ Retrieval failed: {str(e)}, using fallback")
+            print(f"Warning: Retrieval failed: {str(e)}")
             # Emergency fallback
             try:
                 results = self.vector_db.similarity_search(query, k=num_results)
@@ -234,11 +221,6 @@ Respond ONLY with valid JSON."""
             query: User question
             strategy: Retrieval strategy ("auto", "hybrid", "vector", "bm25")
         """
-        logger.info("\n" + "="*60)
-        logger.info(f"🎯 Processing Query: {query}")
-        logger.info(f"📊 Strategy: {strategy}")
-        logger.info("="*60)
-        
         # STEP 1: Analyze query
         analysis = self.analyze_query(query)
         

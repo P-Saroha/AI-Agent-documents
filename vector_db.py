@@ -13,16 +13,20 @@ from langchain_chroma import Chroma
 class VectorDBManager:
     """Manages ChromaDB vector database operations"""
     
-    def __init__(self, api_key: str, collection_name: str = "documents", persist_directory: str = "./chroma_db"):
+    def __init__(self, api_key: str, collection_name: str = "documents", persist_directory: str = "./chroma_db", embeddings=None):
         """Initialize vector database with local embeddings"""
         self.collection_name = collection_name
         self.persist_directory = persist_directory
         
-        # Use local embedding model - lightweight and CPU-optimized
-        self.embeddings = HuggingFaceEmbeddings(
-            model_name="sentence-transformers/all-MiniLM-L6-v2",
-            model_kwargs={'device': 'cpu'}
-        )
+        # Use provided embeddings or create new ones
+        if embeddings is not None:
+            self.embeddings = embeddings
+        else:
+            # Fallback: create new embeddings (for compatibility)
+            self.embeddings = HuggingFaceEmbeddings(
+                model_name="sentence-transformers/all-MiniLM-L6-v2",
+                model_kwargs={'device': 'cpu'}
+            )
         
         # Initialize ChromaDB
         self.vectorstore = None

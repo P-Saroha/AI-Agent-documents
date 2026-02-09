@@ -11,16 +11,26 @@ from langchain_google_genai import ChatGoogleGenerativeAI
 from document_processor import DocumentProcessor
 from vector_db import VectorDBManager
 from agentic_rag import AgenticRAG
-from error_handler import handle_streamlit_errors, validate_api_key, get_error_report, error_monitor, logger
 
 try:
     from advanced_retrieval import AdvancedRetriever
     ADVANCED_RETRIEVAL_AVAILABLE = True
 except ImportError:
-    logger.warning("Advanced retrieval not available - install rank-bm25")
     ADVANCED_RETRIEVAL_AVAILABLE = False
+    print("Advanced retrieval not available - install rank-bm25")
+
 # Load environment variables
 load_dotenv()
+
+# Cache embedding model to prevent reloading
+@st.cache_resource
+def get_embeddings():
+    """Load and cache the embedding model"""
+    from langchain_community.embeddings import HuggingFaceEmbeddings
+    return HuggingFaceEmbeddings(
+        model_name="sentence-transformers/all-MiniLM-L6-v2",
+        model_kwargs={'device': 'cpu'}
+    )
 
 # Page configuration
 st.set_page_config(
@@ -74,9 +84,9 @@ def initialize_session_state():
 def initialize_system(api_key: str):
     """Initialize the RAG system components"""
     try:
-        # Validate API key
-        if not validate_api_key(api_key):
-            st.error("❌ Invalid API key format")
+        # Simple API key validation
+        if not api_key or len(api_key) < 20:
+            st.error("❌ Invalid API key")
             return False
         
         # Initialize LLM (Gemini 2.5 Flash)
@@ -86,10 +96,12 @@ def initialize_system(api_key: str):
             temperature=0.3
         )
         
-        # Initialize Vector Database
+        # Initialize Vector Database with cached embeddings
+        embeddings = get_embeddings()
         vector_db = VectorDBManager(
             api_key=api_key,
-            collection_name="agentic_rag_docs"
+            collection_name="agentic_rag_docs",
+            embeddings=embeddings
         )
         vector_db.create_or_load_collection()
         
@@ -98,9 +110,9 @@ def initialize_system(api_key: str):
         if ADVANCED_RETRIEVAL_AVAILABLE and st.session_state.advanced_mode:
             try:
                 advanced_retriever = AdvancedRetriever(llm, vector_db)
-                logger.info("✓ Advanced retrieval enabled")
+                print("✓ Advanced retrieval enabled")
             except Exception as e:
-                logger.warning(f"Advanced retrieval initialization failed: {str(e)}")
+                print(f"Warning: Advanced retrieval initialization failed: {str(e)}")
         
         # Initialize Agentic RAG
         agent = AgenticRAG(
@@ -126,11 +138,8 @@ def initialize_system(api_key: str):
                     from langchain_core.documents import Document
                     docs = [Document(page_content=doc) for doc in all_docs]
                     advanced_retriever.build_bm25_index(docs)
-                    logger.info("✓ BM25 index built")
             except Exception as e:
-                logger.warning(f"BM25 index build failed: {str(e)}")
-        
-        logger.info("✓ System initialized successfully")
+                print(f"Warning: BM25 index build failed: {str(e)}")
         
         return True
     except Exception as e:
@@ -336,9 +345,8 @@ def process_documents(uploaded_files):
                                 from langchain_core.documents import Document
                                 docs = [Document(page_content=doc) for doc in all_docs]
                                 st.session_state.advanced_retriever.build_bm25_index(docs)
-                                logger.info("✓ BM25 index rebuilt")
                         except Exception as e:
-                            logger.warning(f"BM25 rebuild failed: {str(e)}")
+                            print(f"Warning: BM25 rebuild failed: {str(e)}")
                     
                     # Track session documents
                     for file_path in file_paths:
@@ -412,8 +420,7 @@ def process_query(query: str):
                 })
                 
             except Exception as e:
-                handle_streamlit_errors(e, "Query Processing")
-                error_monitor.log_error("process_query", e)
+                st.error(f"Error processing query: {str(e)}")
 
 
 if __name__ == "__main__":

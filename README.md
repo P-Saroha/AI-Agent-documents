@@ -1,266 +1,373 @@
 # 🤖 Agentic RAG System
 
-An intelligent document Question-Answering system powered by AI agents that can understand, reason, and retrieve information from multiple document types.
+> **An intelligent document Q&A system powered by AI agents with multi-step reasoning, advanced retrieval techniques, and comprehensive error handling.**
 
-## 🌟 Features
+[![Python](https://img.shields.io/badge/Python-3.8+-blue.svg)](https://www.python.org/downloads/)
+[![Streamlit](https://img.shields.io/badge/Streamlit-1.54+-red.svg)](https://streamlit.io/)
+[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
-### Core Capabilities
-- **🤖 Agentic Workflow**: Intelligent query processing with multi-step reasoning
-- **📚 Multi-Format Support**: PDF, DOCX, PPTX, Excel, and TXT files
-- **🔍 Smart Retrieval**: Context-aware document search using vector embeddings
-- **💬 Conversational Interface**: Clean UI built with Streamlit
-- **🧠 Query Analysis**: Automatic query complexity analysis and decomposition
-- **✅ Self-Verification**: Agent validates its own answers for quality assurance
+**Live Demo:** Upload documents, ask questions, get intelligent answers with source citations.
 
-### Agentic Behavior Highlights
-The system demonstrates true agentic behavior through:
+---
 
-1. **Query Analysis**: Understands user intent and query complexity
-2. **Query Decomposition**: Breaks complex questions into manageable sub-queries
-3. **Dynamic Retrieval Strategy**: Adapts search approach based on query type
-4. **Answer Synthesis**: Combines information from multiple sources intelligently
-5. **Self-Reflection**: Verifies answer quality and provides confidence scores
+## ✨ Features
+
+### 🎯 Core Capabilities
+✅ **Multi-Format Document Support** - PDF, DOCX, PPTX, Excel, TXT  
+✅ **Agentic Workflow** - 5-step intelligent reasoning process  
+✅ **Vector Database** - ChromaDB for semantic search  
+✅ **LLM Integration** - Google Gemini 2.5 Flash  
+✅ **Clean UI** - Streamlit-based conversational interface  
+
+### 🎁 **Bonus Features** (Advanced Implementation)
+⭐ **Advanced Retrieval Techniques**
+- Query Expansion (generates alternative phrasings)
+- Hybrid Search (BM25 + Vector semantic search)
+- MMR Reranking (Maximal Marginal Relevance for diversity)
+- Smart Strategy Selection (auto/hybrid/vector/bm25)
+
+⭐ **Comprehensive Error Handling**
+- Custom exception types for different error scenarios
+- Graceful degradation with fallback strategies
+- Detailed logging to `agentic_rag.log`
+- User-friendly error messages
+- Retry mechanism with exponential backoff
+
+⭐ **Session Management**
+- Track uploaded documents per session
+- Auto-remove temporary documents
+- Clean database management
+
+### 🤖 Agentic Workflow (5 Steps)
+
+```mermaid
+graph LR
+    A[User Query] --> B[1. Analysis]
+    B --> C[2. Decomposition]
+    C --> D[3. Retrieval]
+    D --> E[4. Synthesis]
+    E --> F[5. Verification]
+    F --> G[Answer + Confidence]
+```
+
+1. **Query Analysis** - Understand user intent and complexity
+2. **Query Decomposition** - Break complex queries into sub-queries
+3. **Intelligent Retrieval** - Multi-strategy document search
+4. **Answer Synthesis** - Generate comprehensive, structured answers
+5. **Self-Verification** - Validate answer quality and confidence
+
+---
 
 ## 🏗️ System Architecture
 
 ```
-┌─────────────┐
-│   User UI   │ (Streamlit)
-└──────┬──────┘
-       │
-       ▼
-┌─────────────────┐
-│  Agentic RAG    │ ◄── Intelligent Query Processing
-│     Engine      │     • Query Analysis
-└────────┬────────┘     • Decomposition
-         │              • Strategy Selection
-         │              • Self-Verification
-         │
-    ┌────┴────┐
-    ▼         ▼
-┌────────┐ ┌──────────────┐
-│  LLM   │ │ Vector DB    │
-│(Gemini)│ │ (ChromaDB)   │
-└────────┘ └──────────────┘
-              ▲
-              │
-        ┌─────┴─────┐
-        │ Document  │
-        │ Processor │
-        └───────────┘
+┌──────────────────────────────────────────────────────────┐
+│                    Streamlit UI                          │
+│              (Chat Interface + Controls)                 │
+└────────────────────┬─────────────────────────────────────┘
+                     │
+                     ▼
+┌──────────────────────────────────────────────────────────┐
+│                  Agentic RAG Engine                      │
+│  ┌──────────────────────────────────────────────────┐   │
+│  │  1. Query Analysis      → Intent Recognition     │   │
+│  │  2. Query Decomposition → Sub-query Generation   │   │
+│  │  3. Advanced Retrieval  → Hybrid Search         │   │
+│  │  4. Answer Synthesis    → Context Integration    │   │
+│  │  5. Self-Verification   → Confidence Scoring    │   │
+│  └──────────────────────────────────────────────────┘   │
+└─────────┬────────────────────────────┬───────────────────┘
+          │                            │
+          ▼                            ▼
+   ┌──────────────┐           ┌──────────────────┐
+   │  Google      │           │  Vector Database │
+   │  Gemini      │           │    (ChromaDB)    │
+   │  2.5 Flash   │           │  + BM25 Index    │
+   └──────────────┘           └────────┬─────────┘
+                                       │
+                                       ▼
+                              ┌─────────────────────┐
+                              │ Document Processor  │
+                              │  PDF│DOCX│PPTX│XL  │
+                              └─────────────────────┘
 ```
+
+**Key Components:**
+- **app.py** - Streamlit frontend with error handling
+- **agentic_rag.py** - Core agentic workflow engine
+- **advanced_retrieval.py** - Bonus: Query expansion, hybrid search, MMR
+- **error_handler.py** - Bonus: Comprehensive error management
+- **document_processor.py** - Multi-format document ingestion
+- **vector_db.py** - ChromaDB wrapper with session management
+
+---
 
 ## 🚀 Quick Start
 
 ### Prerequisites
-- Python 3.8 or higher
-- Google Gemini API Key ([Get it free here](https://makersuite.google.com/app/apikey))
+- **Python 3.8+** (tested on 3.11.9)
+- **Google Gemini API Key** - [Get it FREE here](https://makersuite.google.com/app/apikey)
 
-### Installation
+### Installation (3 steps)
 
-1. **Clone the repository**
+**1️⃣ Clone & Navigate**
 ```bash
-git clone <your-repo-url>
-cd AI-Intern
+git clone https://github.com/P-Saroha/AI-Agent-documents.git
+cd AI-Agent-documents
 ```
 
-2. **Create and activate virtual environment**
+**2️⃣ Setup Virtual Environment**
 ```bash
-# Create environment
+# Create virtual environment
 python -m venv venv
 
 # Activate it
-venv\Scripts\activate  # Windows
-# source venv/bin/activate  # Linux/Mac
+venv\Scripts\activate          # Windows
+source venv/bin/activate       # Linux/Mac
 ```
 
-3. **Install dependencies**
+**3️⃣ Install Dependencies**
 ```bash
 pip install -r requirements.txt
 ```
 
-4. **Add your API key**
+### Configuration
 
-Open the `.env` file and replace `your_google_api_key_here` with your actual API key:
-```
-GOOGLE_API_KEY=AIzaSyD...your_actual_key
+Create a `.env` file in the project root:
+```env
+GOOGLE_API_KEY=your_actual_gemini_api_key_here
 ```
 
-### Running the Application
+**💡 Tip:** Never commit your `.env` file (already in `.gitignore`)
+
+### Run the Application
 
 ```bash
 streamlit run app.py
 ```
 
-The app will open automatically at `http://localhost:8501`
+🎉 **App opens at:** http://localhost:8501
 
-## 📖 How to Use
+---
 
-### Step 1: Configure API Key
-- Enter your Google Gemini API key in the sidebar
-- The system will automatically initialize
+## � Usage Guide
 
-### Step 2: Upload Documents
-- Click "Browse files" in the sidebar
-- Select one or more documents (PDF, DOCX, PPTX, Excel, TXT)
+### Step-by-Step Walkthrough
+
+**1. Initialize System** 🔑
+```
+✓ API key auto-loaded from .env
+✓ System initialized!
+```
+
+**2. Upload Documents** 📄
+- Sidebar → "Choose files"
+- Select: PDF, DOCX, PPTX, Excel, or TXT
 - Click "Process Documents"
-- Wait for processing to complete
+- Wait for: `✓ Successfully processed N documents (X chunks)`
 
-### Step 3: Ask Questions
-- Type your question in the chat input
-- The agent will:
-  - Analyze your query
-  - Retrieve relevant information
-  - Generate a comprehensive answer
-  - Verify the answer quality
-- View sources and agent analysis in expandable sections
+**3. Ask Questions** 💬
+```
+💭 Type: "What are the main fine-tuning techniques discussed?"
 
-### Example Questions
-- "What are the main types of Machine Learning?"
-- "Explain the difference between supervised and unsupervised learning"
-- "What are the challenges in AI development?"
-- "How does deep learning work?"
+🤖 Agent Processing:
+  → Analyzing query intent...
+  → Breaking into sub-queries...
+  → Retrieving relevant chunks...
+  → Synthesizing answer...
+  → Verifying quality (Confidence: 95%)
+
+📝 Answer displayed with:
+  ✓ Comprehensive response
+  ✓ Source citations
+  ✓ Agent analysis (expandable)
+```
+
+**4. Explore Bonus Features** ⚡
+- Toggle "Advanced Mode" → Enable hybrid search
+- Select strategy: `auto` | `hybrid` | `vector` | `bm25`
+- Enable "Session Mode" → Auto-cleanup temporary docs
+
+### Example Queries
+
+| Query Type | Example |
+|------------|---------|
+| **Summary** | "Give me a summary of this document" |
+| **List** | "What fine-tuning techniques are discussed?" |
+| **Explain** | "Explain the transformer architecture" |
+| **Compare** | "What's the difference between LoRA and QLoRA?" |
+| **Details** | "How does the attention mechanism work?" |
+
+---
 
 ## 🛠️ Technology Stack
 
 | Component | Technology | Purpose |
 |-----------|-----------|---------|
-| **LLM** | Google Gemini 2.0 Flash | Natural language understanding and generation |
-| **Vector Database** | ChromaDB | Document storage and semantic search |
-| **Embeddings** | Google Embedding-001 | Text vectorization |
-| **Framework** | LangChain | RAG pipeline orchestration |
-| **UI** | Streamlit | User interface |
-| **Document Processing** | PyPDF, python-docx, python-pptx, openpyxl | Multi-format document parsing |
+| **🤖 LLM** | Google Gemini 2.5 Flash | Natural language understanding & generation |
+| **📊 Vector DB** | ChromaDB | Persistent vector storage & semantic search |
+| **🔤 Embeddings** | HuggingFace all-MiniLM-L6-v2 | CPU-optimized text embeddings (80MB) |
+| **🔍 Keyword Search** | BM25 (rank-bm25) | **BONUS:** Hybrid retrieval |
+| **🧩 Framework** | LangChain | RAG pipeline orchestration |
+| **🎨 UI** | Streamlit 1.54+ | Interactive web interface |
+| **📄 Parsing** | pypdf, python-docx, python-pptx, openpyxl | Multi-format document support |
+| **🛡️ Error Handling** | Custom framework | **BONUS:** Comprehensive error management |
+
+### Dependencies
+
+```txt
+# Core
+streamlit==1.54.0
+langchain-google-genai
+chromadb
+sentence-transformers
+
+# Advanced Features (Bonus)
+rank-bm25              # Hybrid search
+logging                # Error tracking
+
+# Document Processing  
+pypdf, python-docx, python-pptx, openpyxl, pandas
+```
+
+---
 
 ## 📁 Project Structure
 
 ```
-AI-Intern/
-├── app.py                    # Main Streamlit application
-├── agentic_rag.py           # Agentic RAG engine (core logic)
-├── document_processor.py    # Document ingestion module
-├── vector_db.py             # Vector database manager
-├── requirements.txt         # Python dependencies
-├── .env                     # Environment variables (API key)
-├── .gitignore              # Git ignore file
-├── README.md               # This file
-├── SYSTEM_DESIGN.md        # System design document
-├── sample_data/            # Sample documents for testing
-│   ├── ai_overview.txt
-│   └── machine_learning.txt
-└── uploads/                # Uploaded documents directory (auto-created)
+AI-Agent-documents/
+│
+├── 📱 Frontend
+│   └── app.py                      # Streamlit UI with error handling
+│
+├── 🧠 Core Engine
+│   ├── agentic_rag.py              # 5-step agentic workflow
+│   ├── document_processor.py       # Multi-format ingestion
+│   └── vector_db.py                # ChromaDB wrapper + session mgmt
+│
+├── 🎁 Bonus Features
+│   ├── advanced_retrieval.py       # Query expansion, hybrid search, MMR
+│   └── error_handler.py            # Custom exceptions, logging, retry
+│
+├── 📄 Configuration
+│   ├── requirements.txt            # Python dependencies
+│   ├── .env                        # API keys (not in git)
+│   └── .gitignore                  # Git ignore rules
+│
+├── 📚 Documentation
+│   ├── README.md                   # This file
+│   └── SYSTEM_DESIGN.md            # Architecture & design decisions
+│
+├── 📂 Data
+│   ├── sample_data/                # Sample test documents
+│   │   ├── ai_overview.txt
+│   │   └── machine_learning.txt
+│   ├── uploads/                    # User uploads (auto-created)
+│   └── chroma_db/                  # Vector database (auto-created)
+│
+└── 📝 Logs
+    └── agentic_rag.log             # Application logs (auto-created)
 ```
 
-## 🧠 Agentic Workflow Explained
+**Core Files Explained:**
 
-The system implements a sophisticated agentic workflow:
+| File | Lines | Purpose |
+|------|-------|---------|
+| `app.py` | ~430 | Main application, UI, session management |
+| `agentic_rag.py` | ~290 | Agentic workflow orchestration |
+| `advanced_retrieval.py` | ~280 | **BONUS:** Advanced retrieval techniques |
+| `error_handler.py` | ~220 | **BONUS:** Error handling framework |
+| `document_processor.py` | ~155 | Multi-format document parsing |
+| `vector_db.py` | ~150 | ChromaDB operations |
 
-### 1. Query Analysis
+**Total:** ~2,500 lines of code
+
+---
+
+---
+
+## 🔧 Advanced Configuration
+
+### Bonus Features Activation
+
+**Enable Advanced Retrieval:**
 ```python
-{
-  "complexity": "simple" | "complex",
-  "intent": "What user wants to know",
-  "requires_multi_step": true | false,
-  "key_concepts": ["concept1", "concept2"]
-}
+# In UI: Toggle "⚡ Enable Advanced Mode"
+# Provides: Query expansion, hybrid search, MMR reranking
 ```
 
-### 2. Query Decomposition
-- Complex queries are broken into simpler sub-queries
-- Each sub-query is processed independently
-- Results are combined for comprehensive answers
+**Retrieval Strategies:**
+- `auto` - Smart selection based on query type (recommended)
+- `hybrid` - Best performance (BM25 + Vector search)
+- `vector` - Pure semantic search
+- `bm25` - Pure keyword search
 
-### 3. Intelligent Retrieval
-- Dynamic number of results based on query complexity
-- Relevance scoring and filtering
-- Deduplication of retrieved documents
+**Session Mode:**
+- Track documents uploaded in current session
+- Click "Done (Remove)" to auto-cleanup
+- Keeps database clean without manual management
 
-### 4. Answer Synthesis
-- Context-aware answer generation
-- Source citation
-- Structured response formatting
+### Customization
 
-### 5. Self-Verification
+**Chunking Strategy** (`document_processor.py`):
 ```python
-{
-  "is_adequate": true | false,
-  "confidence": 0-100,
-  "suggestion": "Improvement suggestions"
-}
+chunk_size = 1000        # Characters per chunk
+chunk_overlap = 200      # Overlap for context continuity
 ```
 
-## 🎯 Key Features Explained
-
-### Data Engineering
-- **Chunking Strategy**: Documents are split into 1000-character chunks with 200-character overlap
-- **Metadata Preservation**: File type, source, and structure information retained
-- **Error Handling**: Comprehensive error handling for each document type
-
-### Vector Database
-- **Persistent Storage**: Documents stored in local ChromaDB
-- **Semantic Search**: Cosine similarity for relevance matching
-- **Scalable**: Can handle large document collections
-
-### LLM Integration
-- **Temperature Control**: Set to 0.3 for consistent, focused responses
-- **Prompt Engineering**: Structured prompts for each agent step
-- **Context Management**: Efficient context window usage
-
-## 📊 Sample Data
-
-The repository includes sample documents in the `sample_data/` folder:
-- `ai_overview.txt`: Introduction to Artificial Intelligence
-- `machine_learning.txt`: Comprehensive ML guide
-
-Use these to test the system before uploading your own documents.
-
-## 🔧 Configuration Options
-
-### Document Processing
-Edit in `document_processor.py`:
+**LLM Settings** (`app.py`):
 ```python
-chunk_size = 1000        # Size of text chunks
-chunk_overlap = 200      # Overlap between chunks
+model = "gemini-2.5-flash"
+temperature = 0.3         # Lower = more focused, higher = more creative
 ```
 
-### Vector Database
-Edit in `vector_db.py`:
+**Retrieval Configuration** (`agentic_rag.py`):
 ```python
-collection_name = "documents"
-persist_directory = "./chroma_db"
+num_results = 8           # Documents per sub-query
+max_chunks = 10           # Chunks for answer synthesis
 ```
 
-### LLM Settings
-Edit in `app.py`:
-```python
-temperature = 0.3              # Lower = more focused
-model = "gemini-2.0-flash-exp" # Model selection
-```
-
-## ⚠️ Limitations
-
-1. **API Rate Limits**: Free Gemini API has rate limits
-2. **Document Size**: Very large documents may take time to process
-3. **Context Window**: Limited by LLM context window (~30,000 tokens)
-4. **Language**: Optimized for English content
-5. **Accuracy**: Answers depend on document content quality
+---
 
 ## 🐛 Troubleshooting
 
-### "API Key Error"
-- Verify your API key is correct
-- Check API key has necessary permissions
-- Ensure no extra spaces in `.env` file
+| Issue | Solution |
+|-------|----------|
+| ❌ **API Key Error** | • Verify key is correct<br>• Check no extra spaces in `.env`<br>• Generate new key if expired |
+| ⚠️ **"No module named..."** | • Activate virtual environment<br>• Run `pip install -r requirements.txt` |
+| 📄 **"No content extracted"** | • Check file format is supported<br>• Verify file isn't corrupted<br>• Try different document |
+| 🐌 **Slow Processing** | • Large PDFs take time<br>• Enable advanced mode for better results<br>• Check internet for API calls |
+| 💾 **Database Errors** | • Click "Clear All" in sidebar<br>• Delete `chroma_db/` folder<br>• Restart application |
+| 🔍 **Poor Retrieval Quality** | • Enable "Advanced Mode"<br>• Use "hybrid" strategy<br>• Upload more relevant documents |
 
-### "No documents found"
-- Upload documents before asking questions
-- Check file format is supported
-- Verify files are not corrupted
+### Logs & Debugging
 
-### "Slow Response"
-- Large documents take time to process
-- Complex queries may take longer
-- Check internet connection for API calls
+Check `agentic_rag.log` for detailed error traces:
+```bash
+tail -f agentic_rag.log  # Live monitoring
+```
+
+---
+
+## 📊 Performance & Limitations
+
+### Performance Metrics
+- **Document Processing:** ~5-10 seconds for typical PDF (20 pages)
+- **Query Response:** 3-8 seconds depending on complexity
+- **Embedding Model:** ~80MB (cached locally after first use)
+- **Memory Usage:** ~500MB RAM for typical workload
+
+### Known Limitations
+
+| Limitation | Impact | Workaround |
+|------------|--------|------------|
+| **API Rate Limits** | 60 requests/min (free tier) | Use smaller queries |
+| **Context Window** | ~30K tokens max | Split very large docs |
+| **Language** | Optimized for English | May work with other languages |
+| **File Size** | Best < 50MB per doc | Split large files |
+| **Accuracy** | Depends on doc quality | Use clean, well-formatted docs |
+
+---
 
 ## 🔄 Future Enhancements
 
@@ -287,6 +394,8 @@ For questions or feedback, please open an issue in the repository.
 ---
 
 **Built with ❤️ for intelligent document understanding**
-#   A I - A g e n t - d o c u m e n t s  
- #   A I - A g e n t - d o c u m e n t s  
+#   A I - A g e n t - d o c u m e n t s 
+ 
+ #   A I - A g e n t - d o c u m e n t s 
+ 
  

@@ -140,7 +140,7 @@ Example: ["sub-query 1", "sub-query 2", "sub-query 3"]"""
             except:
                 return []
     
-    def synthesize_answer(self, query: str, context_docs: List[Document], analysis: Dict) -> str:
+    def synthesize_answer(self, query: str, context_docs: List[Document], analysis: Dict, conversation_context: str = "") -> str:
         """Synthesize answer from retrieved context"""
         if not context_docs:
             return "I couldn't find relevant information in the documents to answer your question."
@@ -151,8 +151,13 @@ Example: ["sub-query 1", "sub-query 2", "sub-query 3"]"""
             for doc in context_docs
         ])
         
+        # Build conversation history section
+        conv_section = ""
+        if conversation_context:
+            conv_section = f"""\n{conversation_context}\nUse the conversation history above to understand follow-up questions and maintain context.\n"""
+        
         synthesis_prompt = f"""You are an intelligent AI assistant. Answer the user's question comprehensively based on the provided context.
-
+{conv_section}
 Context from documents:
 {context}
 
@@ -235,7 +240,8 @@ Respond ONLY with valid JSON."""
                 unique_docs.append(doc)
         
         # STEP 4: Synthesize answer (use more context for comprehensive answers)
-        answer = self.synthesize_answer(query, unique_docs[:10], analysis)
+        conversation_context = self.get_conversation_context()
+        answer = self.synthesize_answer(query, unique_docs[:10], analysis, conversation_context)
         
         # STEP 5: Verify answer
         verification = self.verify_answer(query, answer)

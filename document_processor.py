@@ -2,8 +2,7 @@
 Document Ingestion Module
 Handles loading and processing of various document types
 """
-import os
-from typing import List, Dict
+from typing import List
 from pathlib import Path
 
 from langchain_text_splitters import RecursiveCharacterTextSplitter
@@ -11,7 +10,6 @@ from langchain_core.documents import Document
 from pypdf import PdfReader
 from docx import Document as DocxDocument
 from pptx import Presentation
-import openpyxl
 import pandas as pd
 
 

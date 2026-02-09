@@ -88,7 +88,7 @@ The Agentic RAG (Retrieval-Augmented Generation) System is an intelligent docume
   - Coordinate LLM and vector DB interactions
 
 #### LLM Service
-- **Provider**: Google Gemini 2.0 Flash
+- **Provider**: Google Gemini 2.5 Flash
 - **Usage**:
   - Query analysis
   - Query decomposition
@@ -261,7 +261,7 @@ Input Document
 └──────────┬──────────┘
            ↓
 ┌─────────────────────┐
-│  Embedding          │ ← Google embedding-001 model
+│  Embedding          │ ← HuggingFace all-MiniLM-L6-v2 (local)
 └──────────┬──────────┘
            ↓
 ┌─────────────────────┐
@@ -287,13 +287,14 @@ Input Document
 
 ### 4.3 Embedding Strategy
 
-**Model**: Google Embedding-001
-- **Dimensions**: 768
-- **Max Input**: 2048 tokens
+**Model**: HuggingFace all-MiniLM-L6-v2 (runs locally)
+- **Dimensions**: 384
+- **Max Input**: 512 tokens
 - **Advantages**:
-  - Free to use
-  - High quality semantic representations
-  - Integrated with Gemini ecosystem
+  - Runs locally (no API calls)
+  - No cost, no rate limits
+  - Fast inference on CPU
+  - Good quality semantic representations
 
 ### 4.4 Retrieval Strategy
 
@@ -317,9 +318,9 @@ Input Document
 
 | Technology | Choice | Rationale |
 |-----------|--------|-----------|
-| **LLM** | Google Gemini 2.0 Flash | • Free API access<br>• Fast inference<br>• Strong reasoning capabilities<br>• Good context window<br>• Latest model |
+| **LLM** | Google Gemini 2.5 Flash | • Free API access<br>• Fast inference<br>• Strong reasoning capabilities<br>• Good context window<br>• Latest model |
 | **Vector DB** | ChromaDB | • Simple setup<br>• Local persistence<br>• No external service needed<br>• Good performance for medium datasets |
-| **Embeddings** | Google Embedding-001 | • Integrated with Gemini<br>• Free to use<br>• High quality<br>• 768 dimensions |
+| **Embeddings** | HuggingFace all-MiniLM-L6-v2 | • Runs locally on CPU<br>• Free, no API needed<br>• Fast inference<br>• 384 dimensions |
 | **Framework** | LangChain | • RAG utilities<br>• Document loaders<br>• Text splitters<br>• Vector store integrations |
 | **UI** | Streamlit | • Rapid development<br>• Clean interface<br>• Built-in chat components<br>• Easy deployment |
 | **Language** | Python 3.8+ | • ML ecosystem<br>• Library availability<br>• Easy to maintain |

@@ -1,5 +1,5 @@
 """Vector Database Manager using ChromaDB"""
-from typing import List, Dict, Optional
+from typing import List
 from langchain_core.documents import Document
 from langchain_chroma import Chroma
 

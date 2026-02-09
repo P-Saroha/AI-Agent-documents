@@ -238,7 +238,7 @@ def main():
                 st.session_state.advanced_mode = st.checkbox(
                     "Enable Advanced Mode",
                     value=st.session_state.advanced_mode,
-                    help="Query expansion, hybrid search (BM25 + Vector), MMR reranking"
+                    help="Hybrid search (BM25 + Vector) for better retrieval"
                 )
                 
                 if st.session_state.advanced_mode:
@@ -248,7 +248,7 @@ def main():
                         help="auto: Smart selection | hybrid: Best (Vector+BM25) | vector: Semantic only | bm25: Keyword only"
                     )
                     
-                    st.info("**Advanced Features Active:**\n- Query Expansion\n- Hybrid Search\n- MMR Reranking")
+                    st.info("**Advanced Features Active:**\n- BM25 Keyword Search\n- Hybrid Search (Vector + BM25)")
             
             st.divider()
             
@@ -275,7 +275,6 @@ def main():
                             st.success("Session documents removed!")
                             st.rerun()
     
-    # Main content
     # Main content
     if not api_key or api_key == "your_google_api_key_here":
         st.info(" Please add your Google Gemini API Key to get started.")
@@ -378,7 +377,7 @@ def process_documents(uploaded_files):
                 st.error(f"Error processing documents: {str(e)}")
                 
     except Exception as e:
-        handle_streamlit_errors(e, "File Upload")
+        st.error(f"Error uploading files: {str(e)}")
 
 
 def process_query(query: str):

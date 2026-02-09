@@ -1,8 +1,6 @@
 """Agentic RAG System with intelligent query processing"""
-from typing import List, Dict, Optional
-from langchain_google_genai import ChatGoogleGenerativeAI
+from typing import List, Dict
 from langchain_core.documents import Document
-from langchain_core.prompts import PromptTemplate
 import json
 import time
 
@@ -113,9 +111,7 @@ Example: ["sub-query 1", "sub-query 2", "sub-query 3"]"""
                 results = self.advanced_retriever.intelligent_retrieve(
                     query,
                     strategy=strategy if strategy != "auto" else "hybrid",
-                    k=num_results,
-                    use_expansion=True,
-                    use_reranking=True
+                    k=num_results
                 )
                 
                 if results:

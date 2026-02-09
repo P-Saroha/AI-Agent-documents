@@ -1,9 +1,4 @@
-"""
-Vector Database Manager using ChromaDB
-Handles document storage and retrieval
-"""
-import chromadb
-from chromadb.config import Settings
+"""Vector Database Manager using ChromaDB"""
 from typing import List, Dict, Optional
 from langchain_core.documents import Document
 from langchain_community.embeddings import HuggingFaceEmbeddings
@@ -11,7 +6,7 @@ from langchain_chroma import Chroma
 
 
 class VectorDBManager:
-    """Manages ChromaDB vector database operations"""
+    """ChromaDB vector database manager"""
     
     def __init__(self, api_key: str, collection_name: str = "documents", persist_directory: str = "./chroma_db", embeddings=None):
         """Initialize vector database with local embeddings"""
@@ -51,7 +46,6 @@ class VectorDBManager:
                 self.create_or_load_collection()
             
             self.vectorstore.add_documents(documents)
-            print(f"✓ Added {len(documents)} document chunks to vector database")
             return True
         except Exception as e:
             error_msg = str(e)
@@ -99,8 +93,7 @@ class VectorDBManager:
                 print("✓ Collection cleared")
                 return True
         except Exception as e:
-            print(f"✗ Error clearing collection: {str(e)}")
-            return False
+
     
     def get_collection_count(self) -> int:
         """Get number of documents in collection"""
@@ -142,5 +135,4 @@ class VectorDBManager:
             
             return False
         except Exception as e:
-            print(f"✗ Error removing documents: {str(e)}")
             return False

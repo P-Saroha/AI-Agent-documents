@@ -1,14 +1,11 @@
-"""
-Advanced Retrieval Techniques
-Implements query expansion, hybrid search, and reranking for better retrieval
-"""
+"""Advanced Retrieval Techniques"""
 from typing import List, Dict, Tuple
 from langchain_core.documents import Document
 from rank_bm25 import BM25Okapi
 
 
 class AdvancedRetriever:
-    """Enhanced retrieval with multiple strategies"""
+    """Advanced retrieval with query expansion, hybrid search, and MMR"""
     
     def __init__(self, llm, vector_db):
         self.llm = llm

@@ -1,7 +1,4 @@
-"""
-Agentic RAG System
-Implements intelligent query processing with reasoning and decision-making
-"""
+"""Agentic RAG System with intelligent query processing"""
 from typing import List, Dict, Optional
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.documents import Document
@@ -10,16 +7,7 @@ import json
 
 
 class AgenticRAG:
-    """
-    Agentic RAG System with intelligent query processing
-    
-    Agent Capabilities:
-    1. Query Analysis - Understand user intent
-    2. Query Decomposition - Break complex queries
-    3. Retrieval Strategy - Decide how to search (with advanced techniques)
-    4. Answer Synthesis - Generate comprehensive answers
-    5. Self-Reflection - Verify answer quality
-    """
+    """Agentic RAG System with 5-step intelligent query processing"""
     
     def __init__(self, llm, vector_db, advanced_retriever=None):
         self.llm = llm
@@ -29,9 +17,7 @@ class AgenticRAG:
         self.use_advanced_retrieval = advanced_retriever is not None
     
     def analyze_query(self, query: str) -> Dict:
-        """
-        AGENT STEP 1: Analyze query to understand intent and complexity
-        """
+        """Analyze query intent and complexity"""
         analysis_prompt = f"""You are an intelligent query analyzer. Analyze this user query:
 
 Query: "{query}"
@@ -47,7 +33,6 @@ Respond ONLY with valid JSON."""
         try:
             response = self.llm.invoke(analysis_prompt)
             analysis = json.loads(response.content)
-            print(f"\n🤖 Agent Analysis: {analysis['intent']}")
             return analysis
         except:
             # Fallback
@@ -59,9 +44,7 @@ Respond ONLY with valid JSON."""
             }
     
     def decompose_query(self, query: str, analysis: Dict) -> List[str]:
-        """
-        AGENT STEP 2: Decompose complex queries into sub-queries
-        """
+        """Break complex queries into sub-queries"""
         # Always decompose summary/list questions to get comprehensive coverage
         needs_decomposition = (
             analysis.get("requires_multi_step", False) or
@@ -87,7 +70,6 @@ Example: ["sub-query 1", "sub-query 2", "sub-query 3"]"""
         try:
             response = self.llm.invoke(decomposition_prompt)
             sub_queries = json.loads(response.content)
-            print(f"🔍 Agent Plan: Breaking into {len(sub_queries)} sub-queries")
             return sub_queries
         except:
             return [query]
@@ -146,9 +128,7 @@ Example: ["sub-query 1", "sub-query 2", "sub-query 3"]"""
                 return []
     
     def synthesize_answer(self, query: str, context_docs: List[Document], analysis: Dict) -> str:
-        """
-        AGENT STEP 4: Synthesize comprehensive answer from retrieved context
-        """
+        """Synthesize answer from retrieved context"""
         if not context_docs:
             return "I couldn't find relevant information in the documents to answer your question."
         
@@ -184,7 +164,7 @@ Answer:"""
         try:
             response = self.llm.invoke(synthesis_prompt)
             answer = response.content
-            print(f"💡 Agent generated answer")
+
             return answer
         except Exception as e:
             return f"Error generating answer: {str(e)}"
@@ -208,7 +188,6 @@ Respond ONLY with valid JSON."""
         try:
             response = self.llm.invoke(verification_prompt)
             verification = json.loads(response.content)
-            print(f"✓ Agent Confidence: {verification.get('confidence', 'N/A')}%")
             return verification
         except:
             return {"is_adequate": True, "confidence": 80, "suggestion": ""}

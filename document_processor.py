@@ -147,8 +147,7 @@ class DocumentProcessor:
             try:
                 chunks = self.process_document(file_path)
                 all_chunks.extend(chunks)
-                print(f"✓ Processed: {Path(file_path).name} ({len(chunks)} chunks)")
             except Exception as e:
-                print(f"✗ Error processing {Path(file_path).name}: {str(e)}")
+                pass
         
         return all_chunks

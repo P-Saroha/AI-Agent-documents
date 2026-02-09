@@ -1,7 +1,4 @@
-"""
-Agentic RAG System - Main Application
-A simple but powerful RAG system with intelligent agent-based query processing
-"""
+"""Agentic RAG System - Main Application"""
 import streamlit as st
 import os
 from pathlib import Path
@@ -35,7 +32,6 @@ def get_embeddings():
 # Page configuration
 st.set_page_config(
     page_title="Agentic RAG System",
-    page_icon="🤖",
     layout="wide"
 )
 
@@ -84,9 +80,8 @@ def initialize_session_state():
 def initialize_system(api_key: str):
     """Initialize the RAG system components"""
     try:
-        # Simple API key validation
         if not api_key or len(api_key) < 20:
-            st.error("❌ Invalid API key")
+            st.error("Invalid API key")
             return False
         
         # Initialize LLM (Gemini 2.5 Flash)
@@ -110,9 +105,8 @@ def initialize_system(api_key: str):
         if ADVANCED_RETRIEVAL_AVAILABLE and st.session_state.advanced_mode:
             try:
                 advanced_retriever = AdvancedRetriever(llm, vector_db)
-                print("✓ Advanced retrieval enabled")
             except Exception as e:
-                print(f"Warning: Advanced retrieval initialization failed: {str(e)}")
+                print(f"Advanced retrieval initialization failed: {str(e)}")
         
         # Initialize Agentic RAG
         agent = AgenticRAG(
@@ -151,7 +145,7 @@ def main():
     """Main application"""
     
     # Header
-    st.markdown('<h1 class="main-header">🤖 Agentic RAG System</h1>', unsafe_allow_html=True)
+    st.markdown('<h1 class="main-header">Agentic RAG System</h1>', unsafe_allow_html=True)
     st.markdown("### Intelligent Document Q&A with AI Agents")
     
     initialize_session_state()
@@ -172,18 +166,18 @@ def main():
             )
         else:
             api_key = env_api_key
-            st.success("✓ API Key loaded from .env")
+            st.success("API Key loaded from .env")
         
         if api_key and api_key != "your_google_api_key_here" and not st.session_state.initialized:
             with st.spinner("Initializing system..."):
                 if initialize_system(api_key):
-                    st.success("✓ System initialized!")
+                    st.success("System initialized!")
         
         st.divider()
         
         # Document upload
         if st.session_state.initialized:
-            st.header("📄 Upload Documents")
+            st.header("Upload Documents")
             
             uploaded_files = st.file_uploader(
                 "Choose files",
@@ -198,7 +192,7 @@ def main():
             st.divider()
             
             # Stats
-            st.header("📊 Statistics")
+            st.header("Statistics")
             st.metric("Documents in Database", st.session_state.doc_count)
             st.metric("Session Documents", len(st.session_state.session_doc_ids))
             
@@ -212,10 +206,10 @@ def main():
             # Advanced Retrieval (BONUS FEATURE)
             if ADVANCED_RETRIEVAL_AVAILABLE:
                 st.divider()
-                st.header("🎯 Advanced Retrieval")
+                st.header("Advanced Retrieval")
                 
                 st.session_state.advanced_mode = st.checkbox(
-                    "⚡ Enable Advanced Mode",
+                    "Enable Advanced Mode",
                     value=st.session_state.advanced_mode,
                     help="Query expansion, hybrid search (BM25 + Vector), MMR reranking"
                 )
@@ -227,7 +221,7 @@ def main():
                         help="auto: Smart selection | hybrid: Best (Vector+BM25) | vector: Semantic only | bm25: Keyword only"
                     )
                     
-                    st.info("🎁 **Bonus Features Active:**\n- Query Expansion\n- Hybrid Search\n- MMR Reranking")
+                    st.info("**Advanced Features Active:**\n- Query Expansion\n- Hybrid Search\n- MMR Reranking")
             
             st.divider()
             
@@ -243,7 +237,7 @@ def main():
             
             with col2:
                 if len(st.session_state.session_doc_ids) > 0:
-                    if st.button("✅ Done (Remove)", type="primary", use_container_width=True):
+                    if st.button("Done (Remove)", type="primary", use_container_width=True):
                         # Remove session documents
                         removed = st.session_state.vector_db.remove_documents_by_source(
                             st.session_state.session_doc_ids
@@ -251,7 +245,7 @@ def main():
                         if removed:
                             st.session_state.doc_count = st.session_state.vector_db.get_collection_count()
                             st.session_state.session_doc_ids = []
-                            st.success("✓ Session documents removed!")
+                            st.success("Session documents removed!")
                             st.rerun()
                     st.success("Database cleared!")
                     st.rerun()
@@ -269,9 +263,9 @@ def main():
         5. Ask questions about your documents!
         
         ### Features:
-        - 🤖 **Agentic Workflow**: Intelligent query analysis and multi-step reasoning
-        - 📚 **Multi-format Support**: PDF, Word, PowerPoint, Excel, Text
-        - 🔍 **Smart Retrieval**: Context-aware document search
+        - **Agentic Workflow**: Intelligent query analysis and multi-step reasoning
+        - **Multi-format Support**: PDF, Word, PowerPoint, Excel, Text
+        - **Smart Retrieval**: Context-aware document search
         - 💬 **Conversational**: Ask follow-up questions
         """)
         return
@@ -290,7 +284,7 @@ def main():
         with st.chat_message("assistant"):
             st.write(chat['answer'])
             if chat.get('sources'):
-                with st.expander("📚 View Sources"):
+                with st.expander("View Sources"):
                     for i, source in enumerate(chat['sources'], 1):
                         st.markdown(f"**{i}.** {Path(source).name}", unsafe_allow_html=True)
     
@@ -323,7 +317,7 @@ def process_documents(uploaded_files):
                 st.warning(f"⚠️ Failed to save {uploaded_file.name}: {str(e)}")
         
         if not file_paths:
-            st.error("❌ No files could be saved")
+            st.error("No files could be saved")
             return
         
         # Process documents
@@ -353,14 +347,14 @@ def process_documents(uploaded_files):
                         if file_path not in st.session_state.session_doc_ids:
                             st.session_state.session_doc_ids.append(file_path)
                     
-                    st.success(f"✓ Successfully processed {len(file_paths)} documents ({len(chunks)} chunks)")
+                    st.success(f"Successfully processed {len(file_paths)} documents ({len(chunks)} chunks)")
                     if st.session_state.session_mode:
                         st.info("🔄 Session Mode: Click 'Done (Remove)' to auto-remove these documents")
                     if st.session_state.get('advanced_mode'):
-                        st.info("⚡ Advanced retrieval features active")
+                        st.info("Advanced retrieval features active")
                     st.rerun()
                 else:
-                    st.error("❌ No content extracted from documents")
+                    st.error("No content extracted from documents")
             except Exception as e:
                 handle_streamlit_errors(e, "Document Processing")
                 

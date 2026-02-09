@@ -10,7 +10,8 @@ from langchain_google_genai import ChatGoogleGenerativeAI
 
 from document_processor import DocumentProcessor
 from vector_db import VectorDBManager
-from agentic_rag import AgenticRAGfrom error_handler import handle_streamlit_errors, validate_api_key, get_error_report, error_monitor, logger
+from agentic_rag import AgenticRAG
+from error_handler import handle_streamlit_errors, validate_api_key, get_error_report, error_monitor, logger
 
 try:
     from advanced_retrieval import AdvancedRetriever

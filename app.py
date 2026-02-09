@@ -275,7 +275,7 @@ def main():
         return
     
     # Chat interface
-    st.header("💬 Ask Questions")
+    st.header("Ask Questions")
     
     # Display chat history
     for chat in st.session_state.chat_history:
@@ -293,7 +293,7 @@ def main():
     
     if query:
         if st.session_state.doc_count == 0:
-            st.warning("⚠️ Please upload some documents first!")
+            st.warning("Please upload some documents first!")
         else:
             process_query(query)
 
@@ -370,7 +370,7 @@ def process_query(query: str):
     
     # Process with agent
     with st.chat_message("assistant"):
-        with st.spinner("🤖 Agent is thinking..."):
+        with st.spinner("Agent is thinking..."):
             try:
                 # Get retrieval strategy
                 strategy = st.session_state.get('retrieval_strategy', 'auto')
@@ -384,7 +384,7 @@ def process_query(query: str):
                 st.write(result['answer'])
                 
                 # Display analysis
-                with st.expander("🧠 Agent Analysis"):
+                with st.expander("Agent Analysis"):
                     analysis_data = {
                         "Intent": result['analysis'].get('intent', 'N/A'),
                         "Complexity": result['analysis'].get('complexity', 'N/A'),
@@ -399,7 +399,7 @@ def process_query(query: str):
                 
                 # Display sources
                 if result['sources']:
-                    with st.expander("📚 Sources"):
+                    with st.expander("Sources"):
                         for i, doc in enumerate(result['sources'], 1):
                             source_name = Path(doc.metadata.get('source', 'Unknown')).name
                             st.markdown(f"**{i}. {source_name}**")

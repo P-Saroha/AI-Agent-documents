@@ -8,6 +8,7 @@ __pycache__/
 # Database
 chroma_db/
 *.db
+*.log
 
 # IDE
 .vscode/

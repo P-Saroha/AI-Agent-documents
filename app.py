@@ -24,9 +24,13 @@ load_dotenv()
 def get_embeddings():
     """Load and cache the embedding model"""
     from langchain_community.embeddings import HuggingFaceEmbeddings
+    import os
+    # Use local cache only, don't download
+    os.environ['TRANSFORMERS_OFFLINE'] = '0'  # Allow first download
     return HuggingFaceEmbeddings(
         model_name="sentence-transformers/all-MiniLM-L6-v2",
-        model_kwargs={'device': 'cpu'}
+        model_kwargs={'device': 'cpu'},
+        encode_kwargs={'normalize_embeddings': True, 'show_progress_bar': False}
     )
 
 # Page configuration
@@ -356,7 +360,7 @@ def process_documents(uploaded_files):
                 else:
                     st.error("No content extracted from documents")
             except Exception as e:
-                handle_streamlit_errors(e, "Document Processing")
+                st.error(f"Error processing documents: {str(e)}")
                 
     except Exception as e:
         handle_streamlit_errors(e, "File Upload")

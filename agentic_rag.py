@@ -4,6 +4,23 @@ from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.documents import Document
 from langchain_core.prompts import PromptTemplate
 import json
+import time
+
+
+def call_llm_with_retry(llm, prompt, max_retries=3):
+    """Call LLM with automatic retry on rate limit (429) errors"""
+    for attempt in range(max_retries):
+        try:
+            return llm.invoke(prompt)
+        except Exception as e:
+            error_msg = str(e)
+            if '429' in error_msg or 'RESOURCE_EXHAUSTED' in error_msg:
+                wait_time = 20 * (attempt + 1)  # 20s, 40s, 60s
+                print(f"[Rate Limit] Waiting {wait_time}s before retry ({attempt+1}/{max_retries})...")
+                time.sleep(wait_time)
+            else:
+                raise e
+    raise Exception("Rate limit exceeded. Please wait a minute and try again.")
 
 
 class AgenticRAG:
@@ -31,7 +48,7 @@ Provide a JSON response with:
 Respond ONLY with valid JSON."""
 
         try:
-            response = self.llm.invoke(analysis_prompt)
+            response = call_llm_with_retry(self.llm, analysis_prompt)
             analysis = json.loads(response.content)
             return analysis
         except:
@@ -68,7 +85,7 @@ Respond with a JSON list of sub-queries.
 Example: ["sub-query 1", "sub-query 2", "sub-query 3"]"""
 
         try:
-            response = self.llm.invoke(decomposition_prompt)
+            response = call_llm_with_retry(self.llm, decomposition_prompt)
             sub_queries = json.loads(response.content)
             return sub_queries
         except:
@@ -162,7 +179,7 @@ Instructions:
 Answer:"""
 
         try:
-            response = self.llm.invoke(synthesis_prompt)
+            response = call_llm_with_retry(self.llm, synthesis_prompt)
             answer = response.content
 
             return answer
@@ -186,7 +203,7 @@ Provide JSON with:
 Respond ONLY with valid JSON."""
 
         try:
-            response = self.llm.invoke(verification_prompt)
+            response = call_llm_with_retry(self.llm, verification_prompt)
             verification = json.loads(response.content)
             return verification
         except:

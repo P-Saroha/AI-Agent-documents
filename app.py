@@ -34,24 +34,37 @@ load_dotenv()
 @st.cache_resource
 def get_embeddings():
     """Load and cache the embedding model"""
+    import sys, io
     from langchain_community.embeddings import HuggingFaceEmbeddings
     
-    # Try offline first, then online if needed
+    print("[System] Loading embedding model...")
+    
+    # Temporarily redirect stderr to suppress HuggingFace noise
+    _stderr = sys.stderr
+    sys.stderr = io.StringIO()
+    
     try:
-        return HuggingFaceEmbeddings(
+        model = HuggingFaceEmbeddings(
             model_name="sentence-transformers/all-MiniLM-L6-v2",
             model_kwargs={'device': 'cpu'},
             encode_kwargs={'normalize_embeddings': True}
         )
+        sys.stderr = _stderr
+        print("[System] Embedding model loaded successfully")
+        return model
     except Exception:
+        sys.stderr = _stderr
         # Model not cached locally yet, allow download
         os.environ['HF_HUB_OFFLINE'] = '0'
         os.environ['TRANSFORMERS_OFFLINE'] = '0'
-        return HuggingFaceEmbeddings(
+        print("[System] Downloading model (first time only)...")
+        model = HuggingFaceEmbeddings(
             model_name="sentence-transformers/all-MiniLM-L6-v2",
             model_kwargs={'device': 'cpu'},
             encode_kwargs={'normalize_embeddings': True}
         )
+        print("[System] Embedding model loaded successfully")
+        return model
 
 # Page configuration
 st.set_page_config(
@@ -339,9 +352,12 @@ def process_documents(uploaded_files):
                 chunks = st.session_state.doc_processor.process_multiple_documents(file_paths)
                 
                 if chunks:
+                    print(f"[Documents] Created {len(chunks)} chunks from {len(file_paths)} files")
+                    
                     # Add to vector database
                     st.session_state.vector_db.add_documents(chunks)
                     st.session_state.doc_count = st.session_state.vector_db.get_collection_count()
+                    print(f"[Documents] Total documents in database: {st.session_state.doc_count}")
                     
                     # Rebuild BM25 index from new chunks only (fast)
                     if st.session_state.get('advanced_retriever'):
@@ -378,10 +394,15 @@ def process_query(query: str):
                 # Get retrieval strategy
                 strategy = st.session_state.get('retrieval_strategy', 'auto')
                 
+                print(f"\n[Query] '{query}'")
+                print(f"[Query] Strategy: {strategy}")
+                
                 result = st.session_state.agent.process_query(
                     query,
                     strategy=strategy
                 )
+                
+                print(f"[Answer] Sources used: {result['num_sources']}, Confidence: {result['verification'].get('confidence', 'N/A')}%")
                 
                 # Display answer
                 st.write(result['answer'])

@@ -84,19 +84,27 @@ class DocumentProcessor:
         try:
             # Read all sheets
             excel_file = pd.ExcelFile(file_path)
-            text = ""
+            documents = []
             
             for sheet_name in excel_file.sheet_names:
                 df = pd.read_excel(file_path, sheet_name=sheet_name)
-                text += f"\n\n--- Sheet: {sheet_name} ---\n"
-                text += df.to_string() + "\n"
+                
+                # Process in batches of rows to avoid huge single document
+                batch_size = 50  # 50 rows per chunk
+                for start in range(0, len(df), batch_size):
+                    batch = df.iloc[start:start + batch_size]
+                    text = f"Sheet: {sheet_name} (Rows {start+1}-{start+len(batch)})\n"
+                    text += batch.to_string()
+                    
+                    metadata = {
+                        "source": file_path,
+                        "type": "excel",
+                        "sheet": sheet_name,
+                        "rows": f"{start+1}-{start+len(batch)}"
+                    }
+                    documents.append(Document(page_content=text, metadata=metadata))
             
-            metadata = {
-                "source": file_path,
-                "type": "excel",
-                "sheets": len(excel_file.sheet_names)
-            }
-            return [Document(page_content=text, metadata=metadata)]
+            return documents
         except Exception as e:
             raise Exception(f"Error loading Excel {file_path}: {str(e)}")
     

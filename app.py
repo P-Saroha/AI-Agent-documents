@@ -179,7 +179,7 @@ def main():
     
     # Sidebar
     with st.sidebar:
-        st.header("⚙️ Configuration")
+        st.header(" Configuration")
         
         # Get API Key from environment
         env_api_key = os.getenv("GOOGLE_API_KEY", "")
@@ -225,7 +225,7 @@ def main():
             
             # Session mode toggle
             st.session_state.session_mode = st.checkbox(
-                "🔄 Session Mode",
+                " Session Mode",
                 value=st.session_state.session_mode,
                 help="Auto-remove documents when session ends or when you click 'Done'"
             )

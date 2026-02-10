@@ -255,7 +255,7 @@ def main():
             # Cleanup buttons
             col1, col2 = st.columns(2)
             with col1:
-                if st.button("🗑️ Clear All", type="secondary", use_container_width=True):
+                if st.button(" Clear All", type="secondary", use_container_width=True):
                     if st.session_state.vector_db.clear_collection():
                         st.session_state.doc_count = 0
                         st.session_state.chat_history = []
@@ -338,7 +338,7 @@ def process_documents(uploaded_files):
                     f.write(uploaded_file.getbuffer())
                 file_paths.append(str(file_path))
             except Exception as e:
-                st.warning(f"⚠️ Failed to save {uploaded_file.name}: {str(e)}")
+                st.warning(f" Failed to save {uploaded_file.name}: {str(e)}")
         
         if not file_paths:
             st.error("No files could be saved")

@@ -1,8 +1,5 @@
 # Agentic RAG System - System Design Document
 
-**Author:** [Your Name]  
-**Date:** February 2026  
-**Version:** 1.0
 
 ---
 
